@@ -190,16 +190,16 @@ def _raster_problems(layer):
             out.append("values.scale must be a number, and not 0")
         if not is_number(values["offset"]):
             out.append("values.offset must be a number")
-        if not is_text(values["unit"], 0, 80):
-            out.append("values.unit must be text of at most 80 characters (it may be empty)")
+        if not is_text(values["unit"], 0, 16):
+            out.append("values.unit must be text of at most 16 characters (it may be empty)")
         nodata = values["nodata"]
         if nodata is not None and not (is_int(nodata) and 0 <= nodata <= (largest or 65535)):
             out.append("values.nodata must be null or a whole number the type can hold")
     grid = layer.get("grid")
     grid_ok = (isinstance(grid, dict) and set(grid) == {"kind", "levels", "tile"} and grid["kind"] == "latlon"
-               and is_int_pair(grid["levels"], 0, 30) and is_int(grid["tile"]) and grid["tile"] == 256)
+               and is_int_pair(grid["levels"], 0, 12) and is_int(grid["tile"]) and grid["tile"] == 256)
     if not grid_ok:
-        out.append("grid must be {\"kind\": \"latlon\", \"levels\": [lo, hi], \"tile\": 256} with 0 <= lo <= hi <= 30")
+        out.append("grid must be {\"kind\": \"latlon\", \"levels\": [lo, hi], \"tile\": 256} with 0 <= lo <= hi <= 12")
     axis_ids = []
     axes = layer.get("axes", [])
     if not (isinstance(axes, list) and len(axes) <= 4):
@@ -215,8 +215,8 @@ def _raster_problems(layer):
             axis_ids.append(axis["id"])
         if axis["kind"] not in ("ordered", "cyclic", "stops", "set"):
             out.append("axis %d: kind must be ordered, cyclic, stops or set" % n)
-        if not is_text(axis["unit"], 0, 80):
-            out.append("axis %d: unit must be text of at most 80 characters (it may be empty)" % n)
+        if not is_text(axis["unit"], 0, 16):
+            out.append("axis %d: unit must be text of at most 16 characters (it may be empty)" % n)
         steps = axis["values"]
         if not (isinstance(steps, list) and 1 <= len(steps) <= 1000
                 and all(is_text(s, 1, 130, NUMBER) or is_text(s, 1, 64, NAME) for s in steps)
@@ -248,8 +248,8 @@ def _events_problems(layer):
         if not isinstance(app, dict) or set(app) != {"name", "home", "open", "join"}:
             out.append("app must have exactly name, home, open and join (or leave app out)")
         else:
-            if not is_text(app["name"], 1, 80):
-                out.append("app.name must be text of 1 to 80 characters")
+            if not is_text(app["name"], 1, 40):
+                out.append("app.name must be text of 1 to 40 characters")
             for key in ("home", "open", "join"):
                 if not is_https(app[key]):
                     out.append("app.%s must be an https:// address" % key)
