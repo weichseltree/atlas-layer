@@ -22,7 +22,9 @@ ID = re.compile(r"[a-z][a-z0-9-]{0,31}")
 BODY = re.compile(r"[a-z]([a-z0-9-]{0,30}[a-z0-9])?(:[A-Za-z0-9]([A-Za-z0-9._-]{0,62}[A-Za-z0-9])?)?")
 NUMBER = re.compile(r"-?(0|[1-9][0-9]{0,63})(\.[0-9]{1,64})?")
 NAME = re.compile(r"[a-z][a-z0-9-]{0,63}")
-HTTPS = re.compile(r"https://[A-Za-z0-9.-]+(/[^\s\\]*)?")
+# a host as it is written in the address bar: lower-case names with dots, the last one not a number
+# (no machine addresses, no "localhost"), no dot at the end, no port: the same rule as the page's
+HTTPS = re.compile(r"https://([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z][a-z0-9-]{0,61}[a-z0-9](/[^\s\\]*)?")
 PATH = re.compile(r"[A-Za-z0-9._/{}-]+")
 PLACEHOLDER = re.compile(r"\{([^{}]*)\}")
 DAY = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
