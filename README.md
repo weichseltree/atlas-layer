@@ -82,7 +82,8 @@ moment the page reads the manifest, every visitor sees it. If the repository is 
 
 The page lives at another address than these files, so this site must allow other sites to read
 them. GitHub Pages sends
-`access-control-allow-origin: *` on every file, as far as I know; verify it after the first deploy:
+`access-control-allow-origin: *` on every file (seen on this template's own site on 2026-11-24).
+To see it for yours:
 
 ```
 curl -sI https://<owner>.github.io/<repository>/atlas.json | grep -i access-control
