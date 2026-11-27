@@ -21,7 +21,8 @@ on the page: it ships numbers and one manifest.
    A tide model's waves can be one `harmonic` layer: each wave's A cos G and A sin G are two steps
    of the layer's `axis` (kind `stops`), named in `harmonic = { axis = "...", waves = [{ name = "M2",
    cos = "...", sin = "..." }, ...] }`; the page sums them for the time it shows (waves M2, S2, N2,
-   K2, K1, O1, P1, Q1).
+   K2, K1, O1, P1, Q1, each once, every step its own; `body = "earth"` only, and `levels` no higher
+   than 2, since the page sums them on its coarse sphere). weichseltree/atlas-tides is one.
 3. **Push to `main`.** The Action builds, checks, tests and publishes. Once, before the first push:
    in the repository's Settings, under Pages, set the source to "GitHub Actions".
 
