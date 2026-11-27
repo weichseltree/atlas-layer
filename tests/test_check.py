@@ -226,3 +226,33 @@ def test_a_raster_may_say_its_role_and_where_it_lies(role):
     m["layers"][0]["role"] = role
     m["layers"][0]["over"] = "sea"
     assert check_manifest(m) == []
+
+
+def _harmonic(waves=None, kind="stops"):
+    m = copy.deepcopy(GOOD)
+    layer = m["layers"][0]
+    layer["axes"] = [{"id": "part", "kind": kind, "unit": "", "values": ["m2c", "m2s", "s2c", "s2s"]}]
+    layer["files"] = "tide/{part}/{level}/{x}/{y}.png"
+    layer["harmonic"] = {"axis": "part", "waves": waves if waves is not None else [{"name": "M2", "cos": "m2c", "sin": "m2s"}, {"name": "S2", "cos": "s2c", "sin": "s2s"}]}
+    return m
+
+
+def test_a_harmonic_layer_names_its_waves_as_steps_of_its_axis():
+    assert check_manifest(_harmonic()) == []
+    assert any("harmonic.axis" in p for p in check_manifest(_harmonic(kind="ordered")))
+    assert any("name must be one of" in p for p in check_manifest(_harmonic([{"name": "M4", "cos": "m2c", "sin": "m2s"}])))
+    assert any("name must be one of" in p for p in check_manifest(_harmonic([{"name": "M2", "cos": "m2c", "sin": "m2s"}] * 2)))
+    assert any(".sin must be one of" in p for p in check_manifest(_harmonic([{"name": "M2", "cos": "m2c", "sin": "k1s"}])))
+    assert any("harmonic.waves must be" in p for p in check_manifest(_harmonic([])))
+
+
+def test_a_harmonic_layer_is_refused_in_words_not_with_a_traceback():
+    # a name that is not text, a step two waves share, a wave's cos that is its sin, another sphere
+    assert any("name must be one of" in p for p in check_manifest(_harmonic([{"name": ["M2"], "cos": "m2c", "sin": "m2s"}])))
+    shared = check_manifest(_harmonic([{"name": "M2", "cos": "m2c", "sin": "m2s"}, {"name": "S2", "cos": "s2c", "sin": "m2s"}]))
+    assert any("steps of their own" in p for p in shared)
+    assert any("steps of their own" in p for p in check_manifest(_harmonic([{"name": "M2", "cos": "m2c", "sin": "m2c"}])))
+    assert any(".cos must be one of" in p for p in check_manifest(_harmonic([{"name": "M2", "cos": {"x": 1}, "sin": "m2s"}])))
+    mars = _harmonic()
+    mars["layers"][0]["body"] = "mars"
+    assert any("for body \"earth\" only" in p for p in check_manifest(mars))

@@ -30,7 +30,8 @@ PLACEHOLDER = re.compile(r"\{([^{}]*)\}")
 DAY = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
 
 TOP_KEYS = {"atlas", "source", "title", "home", "licence", "cite", "layers"}
-RASTER_KEYS = {"id", "title", "icon", "body", "kind", "focus", "values", "grid", "axes", "files", "index", "maps", "role", "over"}
+RASTER_KEYS = {"id", "title", "icon", "body", "kind", "focus", "values", "grid", "axes", "files", "index", "maps", "role", "over", "harmonic"}
+WAVES = ("M2", "S2", "N2", "K2", "K1", "O1", "P1", "Q1")  # the waves the page has the astronomy of (marbles page/tide.js)
 ROLES = ("relief", "mask", "field", "glow")  # as the page's ROLES (marbles page/manifest.js): change both together
 OVER = ("all", "sea", "land")
 EVENTS_KEYS = {"id", "title", "icon", "body", "kind", "focus", "files", "app"}
@@ -243,6 +244,43 @@ def _raster_problems(layer):
         out.append("role must be one of %s (or leave it out: a field)" % ", ".join(ROLES))
     if "over" in layer and layer["over"] not in OVER:
         out.append("over must be one of %s (or leave it out: all)" % ", ".join(OVER))
+    if "harmonic" in layer:
+        out += _harmonic_problems(layer)
+    return out
+
+
+def _harmonic_problems(layer):
+    """A tide model's waves: each wave's A cos G and A sin G are two steps of the layer's stops axis (marbles page/manifest.js)."""
+    h = layer["harmonic"]
+    if not isinstance(h, dict) or set(h) - {"axis", "waves"}:
+        return ["harmonic must be {axis, waves}"]
+    axes = layer.get("axes") if isinstance(layer.get("axes"), list) else []
+    axis = next((a for a in axes if isinstance(a, dict) and a.get("id") == h.get("axis")), None)
+    out = []
+    if layer.get("body") != "earth":
+        out.append("harmonic is for body \"earth\" only: the page has the Earth's astronomy")
+    if axis is None or axis.get("kind") != "stops":
+        out.append("harmonic.axis must name the layer's axis, of kind stops")
+    waves = h.get("waves")
+    if not isinstance(waves, list) or not 1 <= len(waves) <= len(WAVES):
+        return out + ["harmonic.waves must be 1 to %d waves" % len(WAVES)]
+    values = axis.get("values", []) if axis else []
+    seen, steps = set(), set()
+    for n, w in enumerate(waves):
+        if not isinstance(w, dict) or set(w) != {"name", "cos", "sin"}:
+            out.append("harmonic.waves[%d] must be {name, cos, sin}" % n)
+            continue
+        if not isinstance(w["name"], str) or w["name"] not in WAVES or w["name"] in seen:
+            out.append("harmonic.waves[%d].name must be one of %s, each once" % (n, ", ".join(WAVES)))
+        else:
+            seen.add(w["name"])
+        for part in ("cos", "sin"):
+            if not isinstance(w[part], str) or w[part] not in values:
+                out.append("harmonic.waves[%d].%s must be one of the axis's values" % (n, part))
+            elif w[part] in steps:
+                out.append("harmonic.waves[%d].%s: every wave's cos and sin are steps of their own" % (n, part))
+            else:
+                steps.add(w[part])
     return out
 
 

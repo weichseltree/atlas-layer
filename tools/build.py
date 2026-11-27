@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parent.parent
 TILE = 256
 TOP_KEYS = {"source", "title", "home", "licence", "cite", "layer"}
 LAYER_KEYS = {"id", "title", "icon", "body", "array", "extent", "unit", "type", "min", "max", "nodata",
-              "levels", "focus", "axis", "maps", "role", "over"}
+              "levels", "focus", "axis", "maps", "role", "over", "harmonic"}
 
 
 class BuildError(Exception):
@@ -171,7 +171,7 @@ def build_layer(root, dist, entry, say):
     if "maps" in entry:
         layer["maps"] = entry["maps"]
     # how the page draws it among the other layers that are on, and over which part of the sphere (marbles docs/ATLAS.md §12.4)
-    for key in ("role", "over"):
+    for key in ("role", "over", "harmonic"):
         if key in entry:
             layer[key] = entry[key]
     problems = layer_problems(layer)
