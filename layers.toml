@@ -21,6 +21,8 @@ nodata = 255                              # optional: needed when the array has 
 levels = [0, 0]                           # level L is 2^(L+1) x 2^L tiles of 256 px; capped at the array's own detail
 focus  = [0, 8]                           # optional: lens depths (0 to 30) at which the layer is offered
 maps   = ["viridis", "magma"]             # optional: colour maps of the page
+# role = "field"                          # optional: relief, mask, field or glow (how it is drawn among the others that are on)
+# over = "sea"                            # optional: all, sea or land (where a field lies)
 
 [[layer]]
 id     = "example-steps"

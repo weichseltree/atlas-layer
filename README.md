@@ -15,7 +15,9 @@ on the page: it ships numbers and one manifest.
    north, column 0 is at 180° west. Cells without data are `NaN`.
 2. **List them in `layers.toml`.** The file in this template is the example, and every line in it
    is explained there. Set `source`, `title`, `licence` and `cite` at the top, then one `[[layer]]`
-   per array.
+   per array. A layer may say how the page draws it among the other layers that are on (`role`:
+   `relief` for heights, `mask` for land and sea, `field` for a colour map, `glow` for light such as
+   people at night; none is a field) and where a field lies (`over`: `all`, `sea` or `land`).
 3. **Push to `main`.** The Action builds, checks, tests and publishes. Once, before the first push:
    in the repository's Settings, under Pages, set the source to "GitHub Actions".
 
