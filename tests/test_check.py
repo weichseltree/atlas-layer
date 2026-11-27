@@ -226,3 +226,21 @@ def test_a_raster_may_say_its_role_and_where_it_lies(role):
     m["layers"][0]["role"] = role
     m["layers"][0]["over"] = "sea"
     assert check_manifest(m) == []
+
+
+def _harmonic(waves=None, kind="stops"):
+    m = copy.deepcopy(GOOD)
+    layer = m["layers"][0]
+    layer["axes"] = [{"id": "part", "kind": kind, "unit": "", "values": ["m2c", "m2s", "s2c", "s2s"]}]
+    layer["files"] = "tide/{part}/{level}/{x}/{y}.png"
+    layer["harmonic"] = {"axis": "part", "waves": waves if waves is not None else [{"name": "M2", "cos": "m2c", "sin": "m2s"}, {"name": "S2", "cos": "s2c", "sin": "s2s"}]}
+    return m
+
+
+def test_a_harmonic_layer_names_its_waves_as_steps_of_its_axis():
+    assert check_manifest(_harmonic()) == []
+    assert any("harmonic.axis" in p for p in check_manifest(_harmonic(kind="ordered")))
+    assert any("name must be one of" in p for p in check_manifest(_harmonic([{"name": "M4", "cos": "m2c", "sin": "m2s"}])))
+    assert any("name must be one of" in p for p in check_manifest(_harmonic([{"name": "M2", "cos": "m2c", "sin": "m2s"}] * 2)))
+    assert any(".sin must be one of" in p for p in check_manifest(_harmonic([{"name": "M2", "cos": "m2c", "sin": "k1s"}])))
+    assert any("harmonic.waves must be" in p for p in check_manifest(_harmonic([])))
