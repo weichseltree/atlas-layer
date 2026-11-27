@@ -107,6 +107,9 @@ BROKEN = [
     ("axis named x", change(L0 + ("axes", 0, "id"), "x"), "not level, x or y"),
     ("bad map name", change(L0 + ("maps",), ["Viridis"]), "maps must be"),
     ("maps a string", change(L0 + ("maps",), "viridis"), "maps must be"),
+    ("role the page's own", change(L0 + ("role",), "light"), "role must be one of"),
+    ("over somewhere else", change(L0 + ("over",), "ice"), "over must be one of"),
+    ("events with a role", change(L1 + ("role",), "mask"), "unknown key \"role\""),
     ("app over http", change(L1 + ("app", "home"), "http://kittel.zone/"), "app.home must be an https://"),
     ("app open without id", change(L1 + ("app", "open"), "https://kittel.zone/gig"), "app.open must contain {id}"),
     ("app javascript", change(L1 + ("app", "join"), "javascript:alert(1)"), "app.join must be an https://"),
@@ -215,3 +218,11 @@ def test_atlas_py_is_the_unchanged_copy():
     if not original.is_file():
         pytest.skip("%s is not on this machine" % original)
     assert (ROOT / "tools" / "atlas.py").read_bytes() == original.read_bytes()
+
+
+@pytest.mark.parametrize("role", ["relief", "mask", "field", "glow"])
+def test_a_raster_may_say_its_role_and_where_it_lies(role):
+    m = copy.deepcopy(GOOD)
+    m["layers"][0]["role"] = role
+    m["layers"][0]["over"] = "sea"
+    assert check_manifest(m) == []

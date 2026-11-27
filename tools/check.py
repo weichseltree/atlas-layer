@@ -30,7 +30,9 @@ PLACEHOLDER = re.compile(r"\{([^{}]*)\}")
 DAY = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
 
 TOP_KEYS = {"atlas", "source", "title", "home", "licence", "cite", "layers"}
-RASTER_KEYS = {"id", "title", "icon", "body", "kind", "focus", "values", "grid", "axes", "files", "index", "maps"}
+RASTER_KEYS = {"id", "title", "icon", "body", "kind", "focus", "values", "grid", "axes", "files", "index", "maps", "role", "over"}
+ROLES = ("relief", "mask", "field", "glow")  # as the page's ROLES (marbles page/manifest.js): change both together
+OVER = ("all", "sea", "land")
 EVENTS_KEYS = {"id", "title", "icon", "body", "kind", "focus", "files", "app"}
 
 
@@ -237,6 +239,10 @@ def _raster_problems(layer):
         if not (isinstance(maps, list) and 1 <= len(maps) <= 16 and all(is_text(m, 1, 32, ID) for m in maps)
                 and len(set(maps)) == len(maps)):
             out.append("maps must be 1 to 16 different colour map names like \"viridis\" (or leave it out)")
+    if "role" in layer and layer["role"] not in ROLES:
+        out.append("role must be one of %s (or leave it out: a field)" % ", ".join(ROLES))
+    if "over" in layer and layer["over"] not in OVER:
+        out.append("over must be one of %s (or leave it out: all)" % ", ".join(OVER))
     return out
 
 
