@@ -244,3 +244,15 @@ def test_a_harmonic_layer_names_its_waves_as_steps_of_its_axis():
     assert any("name must be one of" in p for p in check_manifest(_harmonic([{"name": "M2", "cos": "m2c", "sin": "m2s"}] * 2)))
     assert any(".sin must be one of" in p for p in check_manifest(_harmonic([{"name": "M2", "cos": "m2c", "sin": "k1s"}])))
     assert any("harmonic.waves must be" in p for p in check_manifest(_harmonic([])))
+
+
+def test_a_harmonic_layer_is_refused_in_words_not_with_a_traceback():
+    # a name that is not text, a step two waves share, a wave's cos that is its sin, another sphere
+    assert any("name must be one of" in p for p in check_manifest(_harmonic([{"name": ["M2"], "cos": "m2c", "sin": "m2s"}])))
+    shared = check_manifest(_harmonic([{"name": "M2", "cos": "m2c", "sin": "m2s"}, {"name": "S2", "cos": "s2c", "sin": "m2s"}]))
+    assert any("steps of their own" in p for p in shared)
+    assert any("steps of their own" in p for p in check_manifest(_harmonic([{"name": "M2", "cos": "m2c", "sin": "m2c"}])))
+    assert any(".cos must be one of" in p for p in check_manifest(_harmonic([{"name": "M2", "cos": {"x": 1}, "sin": "m2s"}])))
+    mars = _harmonic()
+    mars["layers"][0]["body"] = "mars"
+    assert any("for body \"earth\" only" in p for p in check_manifest(mars))

@@ -257,23 +257,30 @@ def _harmonic_problems(layer):
     axes = layer.get("axes") if isinstance(layer.get("axes"), list) else []
     axis = next((a for a in axes if isinstance(a, dict) and a.get("id") == h.get("axis")), None)
     out = []
+    if layer.get("body") != "earth":
+        out.append("harmonic is for body \"earth\" only: the page has the Earth's astronomy")
     if axis is None or axis.get("kind") != "stops":
         out.append("harmonic.axis must name the layer's axis, of kind stops")
     waves = h.get("waves")
     if not isinstance(waves, list) or not 1 <= len(waves) <= len(WAVES):
         return out + ["harmonic.waves must be 1 to %d waves" % len(WAVES)]
     values = axis.get("values", []) if axis else []
-    seen = set()
+    seen, steps = set(), set()
     for n, w in enumerate(waves):
         if not isinstance(w, dict) or set(w) != {"name", "cos", "sin"}:
             out.append("harmonic.waves[%d] must be {name, cos, sin}" % n)
             continue
-        if w["name"] not in WAVES or w["name"] in seen:
+        if not isinstance(w["name"], str) or w["name"] not in WAVES or w["name"] in seen:
             out.append("harmonic.waves[%d].name must be one of %s, each once" % (n, ", ".join(WAVES)))
-        seen.add(w["name"])
+        else:
+            seen.add(w["name"])
         for part in ("cos", "sin"):
-            if w[part] not in values:
+            if not isinstance(w[part], str) or w[part] not in values:
                 out.append("harmonic.waves[%d].%s must be one of the axis's values" % (n, part))
+            elif w[part] in steps:
+                out.append("harmonic.waves[%d].%s: every wave's cos and sin are steps of their own" % (n, part))
+            else:
+                steps.add(w[part])
     return out
 
 
